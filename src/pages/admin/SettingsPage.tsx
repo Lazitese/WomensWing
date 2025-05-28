@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -98,20 +97,49 @@ const SettingsPage = () => {
     setIsSubmitting(true);
     
     try {
-      // 1. Create user account
+      // 1. Try to create user account (Supabase Auth)
+      // Handle cases where the user might exist in Auth but not in the admins table
+      let authUserExistsOrCreated = false;
+      let authErrorMessage = '';
+
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
       });
-      
-      if (authError) throw authError;
-      
-      if (!authData.user) {
-        throw new Error("ተጠቃሚ መፍጠር አልተቻለም");
+
+      if (authError) {
+        authErrorMessage = authError.message;
+        // Check if the error is specifically 'User already registered'
+        if (authError.message.toLowerCase().includes('user already registered')) {
+           authUserExistsOrCreated = true; // User exists in Auth, we can proceed to check/add to admins table
+        } else {
+           // It's a different Auth error, log and re-throw/handle as a sign-up failure
+           console.error("Supabase Auth signUp error:", authError);
+           throw new Error('የተጠቃሚ መለያ መፍጠር አልተቻለም: ' + authError.message);
+        }
+      } else if (authData?.user) {
+         // User was successfully created in Auth
+         authUserExistsOrCreated = true;
       }
-      
-      // 2. Add user to admins table using insert function directly instead of using RLS policies
-      // This will bypass RLS policies as the admin table should allow existing admins to insert
+
+      // --- Debugging Log 1 ---
+      console.log('After Auth SignUp/Check: authUserExistsOrCreated=', authUserExistsOrCreated, 'Auth Error Message:', authErrorMessage);
+      // --- End Debugging Log 1 ---
+
+      // --- Additional Debugging Log ---
+      console.log('Auth Data User:', authData?.user);
+      // --- End Additional Debugging Log ---
+
+      // Only proceed if the user was created in Auth or already exists in Auth
+      if (!authUserExistsOrCreated) {
+           // This case should ideally be covered by the error checks above,
+           // but include as a safeguard.
+           throw new Error('የተጠቃሚ መለያ መፍጠር ወይም ማረጋገጥ አልተቻለም');
+      }
+
+      // 2. Add user email to admins table
+      // If the insert fails with a unique constraint violation (23505),
+      // it means the admin email already exists in our table.
       const { error: insertError } = await supabase
         .from('admins')
         .insert({
@@ -119,11 +147,29 @@ const SettingsPage = () => {
         });
       
       if (insertError) {
-        console.error("Admin insertion error:", insertError);
-        throw new Error("አስተዳዳሪ ማከል አልተቻለም: " + insertError.message);
+         // --- Debugging Log 2 ---
+         console.error('Insert Error Object:', insertError);
+         console.error('Insert Error Code:', insertError.code);
+         console.error('Insert Error Message:', insertError.message);
+         // --- End Debugging Log 2 ---
+
+         // Handle duplicate key error (email already exists in admins table)
+         if (insertError.code === '23505') {
+           console.log("Admin already exists error:", insertError);
+           // Show a non-destructive toast for duplicate email
+           toast({
+             title: "Existing Admin",
+             description: "ይህ ኢሜይል ያስቀድሞ አስተዳዳሪ ነው", // This email is already an admin
+             variant: "default", // Use default variant for existing admin
+           });
+           // Do NOT re-throw the error, submission was handled gracefully
+         } else {
+            // For other insert errors, throw the error to be caught by the general catch block
+            throw insertError;
+         }
       }
       
-      // 3. Success!
+      // 3. Success! If we reached here, both Auth (or existence check) and admins insert were successful.
       toast({
         title: "አዲስ አስተዳዳሪ ተፈጥሯል",
         description: `አስተዳዳሪ ${email} ተሳክቷል`,
@@ -136,13 +182,16 @@ const SettingsPage = () => {
       setConfirmPassword("");
       
     } catch (error: any) {
+      // This catch block handles errors thrown from any step above (excluding the handled 23505 insert error)
       toast({
         title: "ስህተት ተፈጥሯል",
         description: error.message || "አስተዳዳሪ መፍጠር አልተቻለም",
         variant: "destructive"
       });
-      console.error("Failed to add admin:", error);
+      console.error("Failed to add admin (caught error):", error);
     } finally {
+      // Note: setIsSubmitting(false) is also called in the 23505 handler,
+      // so this ensures it's always reset.
       setIsSubmitting(false);
     }
   };

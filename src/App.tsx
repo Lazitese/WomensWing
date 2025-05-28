@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,7 +7,7 @@ import Index from "./pages/Index";
 import QretaForm from "./pages/QretaForm";
 import AbalatMzgebaForm from "./pages/AbalatMzgebaForm";
 import MembershipApplicationLetter from "./pages/MembershipApplicationLetter";
-import ReportForm from "./pages/ReportForm";
+import ReportSubmissionPage from "./pages/ReportSubmissionPage";
 import ProjectsPage from "./pages/ProjectsPage";
 import SleEgnaPage from "./pages/SleEgnaPage";
 import ContactPage from "./pages/ContactPage";
@@ -35,7 +34,7 @@ const App = () => (
           <Route path="/qreta" element={<QretaForm />} />
           <Route path="/abalat-mzgeba" element={<MembershipApplicationLetter />} />
           <Route path="/abalat-mzgeba/form" element={<AbalatMzgebaForm />} />
-          <Route path="/report" element={<ReportForm />} />
+          <Route path="/report" element={<ReportSubmissionPage />} />
           <Route path="/projects" element={<ProjectsPage />} />
           <Route path="/sle-egna" element={<SleEgnaPage />} />
           <Route path="/documents" element={<DocumentsPage />} />

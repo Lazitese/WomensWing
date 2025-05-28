@@ -21,7 +21,22 @@ const qretaFormSchema = z.object({
   woreda: z.string().min(1, { message: "ወረዳ ማስገባት አለብዎት" }),
   kebele: z.string().min(1, { message: "ብሎክ ማስገባት አለብዎት" }),
   message: z.string().min(10, { message: "ቢያንስ 10 ፊደላት መጻፍ አለብዎት" }),
-  file: z.any().optional(),
+  file: z.instanceof(FileList).optional().refine(files => {
+    if (!files || files.length === 0) return true;
+    const file = files[0];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowedTypes = ['image/*', 'application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
+
+    if (file.size > maxSize) {
+        return false;
+    }
+
+    if (!allowedTypes.some(type => file.type.startsWith(type.split('*')[0] || '') || file.type === type)) {
+        return false;
+    }
+
+    return true;
+  }, { message: "ትክክለኛ የፋይል አይነት ወይም መጠን አይደለም (ከ5MB ያነሰ፣ ምስል/PDF/Word)" }),
 });
 
 type QretaFormValues = z.infer<typeof qretaFormSchema>;
@@ -46,9 +61,40 @@ const QretaForm = () => {
   const onSubmit = async (data: QretaFormValues) => {
     setIsSubmitting(true);
     
+    let fileUrl: string | null = null;
+
     try {
-      // Insert into Supabase
-      const { error } = await supabase
+      // 1. Handle file upload if a file is selected
+      const file = data.file?.[0];
+      if (file) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        // Upload to the 'qreta' bucket, in a 'qreta_submissions' folder
+        const filePath = `qreta_submissions/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('qreta') // Use the qreta bucket
+          .upload(filePath, file);
+
+        if (uploadError) {
+          console.error("Supabase Storage upload error (qreta):", uploadError);
+          throw new Error(`ፋይል መስቀል አልተቻለም: ${uploadError.message}`);
+        }
+
+        // Get the public URL of the uploaded file
+        const { data: publicUrlData } = supabase.storage
+          .from('qreta')
+          .getPublicUrl(filePath);
+        
+        if (publicUrlData) {
+          fileUrl = publicUrlData.publicUrl;
+        } else {
+           console.warn("Could not get public URL for uploaded qreta file");
+        }
+      }
+
+      // 2. Insert into Supabase database (qreta_submissions)
+      const { error: insertError } = await supabase
         .from('qreta_submissions')
         .insert({
           full_name: data.full_name,
@@ -57,10 +103,12 @@ const QretaForm = () => {
           woreda: data.woreda,
           kebele: data.kebele,
           message: data.message,
+          file_url: fileUrl, // Include the file URL
         });
       
-      if (error) {
-        throw error;
+      if (insertError) {
+        console.error("Supabase database insert error (qreta):", insertError);
+        throw new Error(`ጥቆማ ማስገባት አልተቻለም: ${insertError.message}`);
       }
       
       toast({
@@ -226,24 +274,19 @@ const QretaForm = () => {
                   <FormField
                     control={form.control}
                     name="file"
-                    render={({ field }) => (
+                    render={({ field: { value, onChange, ...fieldProps } }) => (
                       <FormItem>
                         <FormLabel>አባሪ ፋይል (አማራጭ)</FormLabel>
                         <FormControl>
                           <Input
+                            {...fieldProps}
                             type="file"
-                            onChange={(e) => {
-                              field.onChange(e.target.files?.[0] || null);
-                            }}
-                            className="file:mr-4 file:py-2 file:px-4
-                                      file:rounded-md file:border-0
-                                      file:text-sm file:font-semibold
-                                      file:bg-gov-light file:text-gov-dark
-                                      hover:file:bg-gov-light/80"
+                            accept="image/*,application/pdf,.doc,.docx"
+                            onChange={(event) => onChange(event.target.files)}
                           />
                         </FormControl>
                         <FormDescription>
-                          ፎቶ ወይም ሰነድ ካለዎት ያስገቡ (ከ5MB ያነሰ መሆን አለበት)
+                          አስፈላጊ ከሆነ አግባብነት ያለው ፋይል ያያይዙ (እስከ 5MB፣ ምስል/PDF/Word)
                         </FormDescription>
                         <FormMessage />
                       </FormItem>

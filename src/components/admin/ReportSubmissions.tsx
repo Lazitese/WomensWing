@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -261,10 +260,20 @@ const ReportSubmissions = () => {
               </div>
               
               <div className="space-y-2 mt-4">
-                <p className="text-sm font-medium text-gray-500">የሪፖርት ዝርዝር</p>
-                <div className="bg-gray-50 p-4 rounded-md whitespace-pre-wrap">
-                  {selectedSubmission.report_details}
-                </div>
+                <p className="text-sm font-medium text-gray-500">የሪፖርት ዝርዝር (ፋይል)</p>
+                {selectedSubmission.report_details ? (
+                  <a 
+                    href={selectedSubmission.report_details}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    download
+                    className="text-gov-accent hover:underline"
+                  >
+                    ፋይል አውርድ
+                  </a>
+                ) : (
+                  <p>ምንም ፋይል የለም</p>
+                )}
               </div>
               
               <div className="flex justify-end gap-4 mt-6">

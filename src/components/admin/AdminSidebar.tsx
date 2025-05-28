@@ -173,9 +173,9 @@ const AdminSidebar = () => {
           )}>
             <div className="flex items-center justify-center h-11 w-11 bg-white rounded-lg shadow-md">
               <img 
-                src="/images/prosperity-party-logo.svg" 
-                alt="Prosperity Party Logo" 
-                className="h-7 w-auto"
+                src="/images/Logo Beltsegena.jpg" 
+                alt="Prosperity Party Women's Wing Logo" 
+                className="h-9 w-9"
               />
             </div>
             {!collapsed && (

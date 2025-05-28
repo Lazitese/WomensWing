@@ -106,9 +106,21 @@ const AbalatSubmissions = ({ showAddForm, setShowAddForm, filterType = "all", se
   useEffect(() => {
     let filtered = submissions;
     
-    // Apply status filter
-    if (statusFilter !== "all") {
-      filtered = filtered.filter(item => item.status === statusFilter);
+    // Map the filter string to the actual database status value
+    let dbStatusFilter: 'pending' | 'accepted' | 'rejected' | "all" = statusFilter as any; // Start with the string, will refine
+    if (statusFilter === "active") {
+        dbStatusFilter = "accepted";
+    } else if (statusFilter === "pending") {
+        dbStatusFilter = "pending";
+    } else if (statusFilter === "rejected") {
+        dbStatusFilter = "rejected";
+    } else {
+        dbStatusFilter = "all"; // No filter applied
+    }
+
+    // Apply status filter using the mapped database status value
+    if (dbStatusFilter !== "all") {
+      filtered = filtered.filter(item => item.status === dbStatusFilter);
     }
     
     // Apply search filter

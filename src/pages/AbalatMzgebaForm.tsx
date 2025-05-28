@@ -243,34 +243,6 @@ const AbalatMzgebaForm = () => {
                     />
                   </div>
                   
-                  <FormField
-                    control={form.control}
-                    name="photo"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>ፎቶ</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                              field.onChange(e.target.files?.[0] || null);
-                            }}
-                            className="file:mr-4 file:py-2 file:px-4
-                                      file:rounded-md file:border-0
-                                      file:text-sm file:font-semibold
-                                      file:bg-gov-light file:text-gov-dark
-                                      hover:file:bg-gov-light/80"
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          የሁለት ወር ውስጥ የተነሳ 3x4 ወይም ፓስፖርት መጠን ያለው ፎቶ (ከ2MB ያነሰ መሆን አለበት)
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
                   <Button
                     type="submit"
                     className="w-full bg-gov-accent hover:bg-gov-accent/90"

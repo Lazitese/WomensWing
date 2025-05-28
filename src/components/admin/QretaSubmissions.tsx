@@ -16,6 +16,7 @@ interface QretaSubmission {
   kebele: string;
   message: string;
   created_at: string;
+  file_url: string | null;
 }
 
 const QretaSubmissions = () => {
@@ -224,6 +225,23 @@ const QretaSubmissions = () => {
                   {selectedSubmission.message}
                 </div>
               </div>
+
+              {/* Add file download link */}
+              {selectedSubmission.file_url && (
+                <div className="space-y-1">
+                   <h4 className="text-sm font-medium text-gray-500">አባሪ ፋይል</h4>
+                    <a
+                      href={selectedSubmission.file_url}
+                      target="_blank" // Open in new tab
+                      rel="noopener noreferrer" // Security best practice
+                      download // Suggest download instead of navigating
+                      className="text-gov-accent hover:underline font-medium"
+                    >
+                      ፋይል አውርድ
+                    </a>
+                </div>
+              )}
+
               <div className="flex justify-end space-x-2 pt-4">
                 <Button variant="outline" size="sm" onClick={() => setDetailsOpen(false)} className="border-gray-200">ዝጋ</Button>
                 <Button 
