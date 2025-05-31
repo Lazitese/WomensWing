@@ -20,7 +20,7 @@ const SleEgnaPage = () => {
     const leadershipData = [
     {      name: "ወ/ ሮ ሜሮን መንግስቱ",      position: "የአቃቂ ቃሊቲ ክ/ ከተማ የብልጽግና ሴቶች ክንፍ ጽ/ ቤት ኃላፊ",
       experience: "የአመራርነት የቆይታ ግዜ 9 ዓመት",
-      image: "public/images/ሜሮን.jpg", // Corrected image path
+      image: "/images/ሜሮን.jpg", // Corrected image path
     },
     {
       name: "አያንቱ ሰጉ",
