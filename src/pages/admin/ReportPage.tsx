@@ -102,7 +102,7 @@ const ReportPage = () => {
                   </div>
                   <Button variant="outline" className="gap-2 border-gray-200">
                     <Download size={16} />
-                    <span>ወርድ በCSV</span>
+                    <span>ወርድ በExcel</span>
                   </Button>
                 </div>
               </div>

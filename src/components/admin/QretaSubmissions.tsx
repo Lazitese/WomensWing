@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format } from "date-fns";
+import { exportToExcel } from "@/utils/excelExport";
 import { Download, Eye } from "lucide-react";
 
 interface QretaSubmission {
@@ -103,45 +104,46 @@ const QretaSubmissions = ({ searchQuery }: QretaSubmissionsProps) => {
     setDetailsOpen(true);
   };
 
-  const exportToCsv = (singleSubmission?: QretaSubmission) => {
+  const exportToXlsx = async (singleSubmission?: QretaSubmission) => {
     try {
       const dataToExport = singleSubmission ? [singleSubmission] : filteredSubmissions;
-      const csvHeader = "ID,ሙሉ ስም,ስልክ,ኢሜይል,ወረዳ,ቀበሌ,መልዕክት,የተፈጠረበት ጊዜ\n";
       
-      const csvRows = dataToExport.map(item => {
-        // Format the date
-        const formattedDate = format(new Date(item.created_at), "yyyy-MM-dd HH:mm:ss");
-        
-        // Escape values to handle commas and quotes within the data
-        const escapedMessage = `"${item.message.replace(/"/g, '""')}"`;
-        const email = item.email ? item.email : '';
-        
-        return `${item.id},${item.full_name},${item.phone},${email},${item.woreda},${item.kebele},${escapedMessage},${formattedDate}`;
-      });
-      
-      const csvString = csvHeader + csvRows.join("\n");
-      const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
-      const link = document.createElement("a");
-      
-      // Create a URL for the blob
-      const url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
-      link.setAttribute("download", singleSubmission ? `qreta_${singleSubmission.id}.csv` : "qreta_submissions.csv");
-      link.style.visibility = "hidden";
-      
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      toast({
-        title: "ወርዷል",
-        description: "CSV ፋይል በተሳካ ሁኔታ ወርዷል",
-      });
+      const columns = [
+        { header: 'ID', key: 'id', width: 15 },
+        { header: 'ሙሉ ስም', key: 'full_name', width: 20 },
+        { header: 'ስልክ', key: 'phone', width: 15 },
+        { header: 'ኢሜይል', key: 'email', width: 25 },
+        { header: 'ወረዳ', key: 'woreda', width: 15 },
+        { header: 'ቀበሌ', key: 'kebele', width: 15 },
+        { header: 'መልዕክት', key: 'message', width: 40 },
+        { header: 'የተፈጠረበት ጊዜ', key: 'created_at', width: 20 }
+      ];
+
+      const formattedData = dataToExport.map(item => ({
+        ...item,
+        created_at: format(new Date(item.created_at), "yyyy-MM-dd HH:mm:ss"),
+        email: item.email || ''
+      }));
+
+      const success = await exportToExcel(
+        formattedData,
+        columns,
+        singleSubmission ? `qreta_${singleSubmission.id}` : 'qreta_submissions'
+      );
+
+      if (success) {
+        toast({
+          title: "ወርዷል",
+          description: "Excel ፋይል በተሳካ ሁኔታ ወርዷል",
+        });
+      } else {
+        throw new Error('Export failed');
+      }
     } catch (error) {
       console.error("Export error:", error);
       toast({
         title: "Error",
-        description: "የCSV ፋይል ለማውረድ ችግር ተፈጥሯል",
+        description: "የExcel ፋይል ለማውረድ ችግር ተፈጥሯል",
         variant: "destructive",
       });
     }
@@ -210,7 +212,7 @@ const QretaSubmissions = ({ searchQuery }: QretaSubmissionsProps) => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => exportToCsv(submission)}
+                        onClick={() => exportToXlsx(submission)}
                         className="gap-1 border-gray-200 hover:bg-gov-accent/20"
                       >
                         <Download className="mr-2 h-4 w-4 text-gov-accent" />
@@ -294,7 +296,7 @@ const QretaSubmissions = ({ searchQuery }: QretaSubmissionsProps) => {
                 <Button 
                   size="sm" 
                   className="gap-1 bg-gov-accent hover:bg-gov-accent/90 text-white" 
-                  onClick={() => exportToCsv(selectedSubmission)}
+                  onClick={() => exportToXlsx(selectedSubmission)}
                 >
                   <Download size={14} />
                   ወርድ

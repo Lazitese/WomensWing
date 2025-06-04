@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format } from "date-fns";
+import { exportToExcel } from "@/utils/excelExport";
 import { Download, Eye, Search } from "lucide-react";
 
 interface ReportSubmission {
@@ -105,45 +106,47 @@ const ReportSubmissions = ({ searchQuery }: ReportSubmissionsProps) => {
     setDetailsOpen(true);
   };
 
-  const exportToCsv = (singleSubmission?: ReportSubmission) => {
+  const exportToXlsx = async (singleSubmission?: ReportSubmission) => {
     try {
       const dataToExport = singleSubmission ? [singleSubmission] : filteredSubmissions;
-      const csvHeader = "ID,ሙሉ ስም,ስልክ,ኢሜይል,ወረዳ,ቀበሌ,የሪፖርት ዓይነት,የሪፖርት ዝርዝር,የተፈጠረበት ጊዜ\n";
       
-      const csvRows = dataToExport.map(item => {
-        // Format the date
-        const formattedDate = format(new Date(item.created_at), "yyyy-MM-dd HH:mm:ss");
-        
-        // Escape values to handle commas and quotes within the data
-        const escapedDetails = `"${item.report_details.replace(/"/g, '""')}"`;
-        const email = item.email ? item.email : '';
-        
-        return `${item.id},${item.full_name},${item.phone},${email},${item.woreda},${item.kebele},${item.report_type},${escapedDetails},${formattedDate}`;
-      });
+      const columns = [
+        { header: 'ID', key: 'id', width: 15 },
+        { header: 'ሙሉ ስም', key: 'full_name', width: 20 },
+        { header: 'ስልክ', key: 'phone', width: 15 },
+        { header: 'ኢሜይል', key: 'email', width: 25 },
+        { header: 'ወረዳ', key: 'woreda', width: 15 },
+        { header: 'ቀበሌ', key: 'kebele', width: 15 },
+        { header: 'የሪፖርት ዓይነት', key: 'report_type', width: 20 },
+        { header: 'የሪፖርት ዝርዝር', key: 'report_details', width: 40 },
+        { header: 'የተፈጠረበት ጊዜ', key: 'created_at', width: 20 }
+      ];
       
-      const csvString = csvHeader + csvRows.join("\n");
-      const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
-      const link = document.createElement("a");
+      const formattedData = dataToExport.map(item => ({
+        ...item,
+        created_at: format(new Date(item.created_at), "yyyy-MM-dd HH:mm:ss"),
+        email: item.email || ''
+      }));
       
-      // Create a URL for the blob
-      const url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
-      link.setAttribute("download", singleSubmission ? `report_${singleSubmission.id}.csv` : "report_submissions.csv");
-      link.style.visibility = "hidden";
-      
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      toast({
-        title: "ወርዷል",
-        description: "CSV ፋይል በተሳካ ሁኔታ ወርዷል",
-      });
+      const success = await exportToExcel(
+        formattedData,
+        columns,
+        singleSubmission ? `report_${singleSubmission.id}` : 'report_submissions'
+      );
+
+      if (success) {
+        toast({
+          title: "ወርዷል",
+          description: "Excel ፋይል በተሳካ ሁኔታ ወርዷል",
+        });
+      } else {
+        throw new Error('Export failed');
+      }
     } catch (error) {
       console.error("Export error:", error);
       toast({
         title: "Error",
-        description: "የCSV ፋይል ለማውረድ ችግር ተፈጥሯል",
+        description: "የExcel ፋይል ለማውረድ ችግር ተፈጥሯል",
         variant: "destructive",
       });
     }
@@ -164,12 +167,12 @@ const ReportSubmissions = ({ searchQuery }: ReportSubmissionsProps) => {
         
         <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
           <Button
-            onClick={() => exportToCsv()}
+            onClick={() => exportToXlsx()}
             className="bg-gov-accent hover:bg-gov-accent/90 gap-2 w-full md:w-auto"
             disabled={filteredSubmissions.length === 0}
           >
             <Download size={16} />
-            ሁሉንም ወርድ (CSV)
+            ሁሉንም ወርድ (Excel)
           </Button>
         </div>
       </div>
@@ -215,11 +218,11 @@ const ReportSubmissions = ({ searchQuery }: ReportSubmissionsProps) => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => exportToCsv(submission)}
+                        onClick={() => exportToXlsx(submission)}
                         className="gap-1"
                       >
                         <Download size={14} />
-                        CSV
+                        Excel
                       </Button>
                     </div>
                   </TableCell>
@@ -295,11 +298,11 @@ const ReportSubmissions = ({ searchQuery }: ReportSubmissionsProps) => {
                 </Button>
                 
                 <Button
-                  onClick={() => exportToCsv(selectedSubmission)}
+                  onClick={() => exportToXlsx(selectedSubmission)}
                   className="bg-gov-accent hover:bg-gov-accent/90 gap-2"
                 >
                   <Download size={16} />
-                  CSV ወርድ
+                  Excel ወርድ
                 </Button>
               </div>
             </>

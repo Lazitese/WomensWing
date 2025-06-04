@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
+import { exportToExcel } from "@/utils/excelExport";
 import { 
   Check, 
   Download, 
@@ -194,51 +195,52 @@ const AbalatSubmissions = ({ showAddForm, setShowAddForm, filterType = "all", se
     }
   };
 
-  const exportToCsv = (singleSubmission?: AbalatSubmission) => {
+  const exportToXlsx = async (singleSubmission?: AbalatSubmission) => {
     try {
       const dataToExport = singleSubmission ? [singleSubmission] : filteredSubmissions;
-      const csvHeader = "ID,ሙሉ ስም,ስልክ,ኢሜይል,ወረዳ,ቀበሌ,እድሜ,የትምህርት ደረጃ,ስራ,ሁኔታ,የተፈጠረበት ጊዜ\n";
       
-      const csvRows = dataToExport.map(item => {
-        // Format the date
-        const formattedDate = format(new Date(item.created_at), "yyyy-MM-dd HH:mm:ss");
-        
-        // Translate status
-        let statusTranslated = "";
-        switch(item.status) {
-          case 'pending': statusTranslated = "በመጠባበቅ ላይ"; break;
-          case 'accepted': statusTranslated = "ተቀባይነት አግኝቷል"; break;
-          case 'rejected': statusTranslated = "ተቀባይነት አላገኘም"; break;
-        }
-        
-        const email = item.email ? item.email : '';
-        
-        return `${item.id},${item.full_name},${item.phone},${email},${item.woreda},${item.kebele},${item.age},${item.education_level},${item.occupation},${statusTranslated},${formattedDate}`;
-      });
+      const columns = [
+        { header: 'ID', key: 'id', width: 15 },
+        { header: 'ሙሉ ስም', key: 'full_name', width: 20 },
+        { header: 'ስልክ', key: 'phone', width: 15 },
+        { header: 'ኢሜይል', key: 'email', width: 25 },
+        { header: 'ወረዳ', key: 'woreda', width: 15 },
+        { header: 'ቀበሌ', key: 'kebele', width: 15 },
+        { header: 'እድሜ', key: 'age', width: 10 },
+        { header: 'የትምህርት ደረጃ', key: 'education_level', width: 20 },
+        { header: 'ስራ', key: 'occupation', width: 20 },
+        { header: 'ሁኔታ', key: 'status', width: 15 },
+        { header: 'የተፈጠረበት ጊዜ', key: 'created_at', width: 20 }
+      ];
+
+      const formattedData = dataToExport.map(item => ({
+        ...item,
+        status: item.status === 'pending' ? 'በመጠባበቅ ላይ' :
+                item.status === 'accepted' ? 'ተቀባይነት አግኝቷል' :
+                'ተቀባይነት አላገኘም',
+        created_at: format(new Date(item.created_at), "yyyy-MM-dd HH:mm:ss"),
+        email: item.email || ''
+      }));
       
-      const csvString = csvHeader + csvRows.join("\n");
-      const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
-      const link = document.createElement("a");
-      
-      // Create a URL for the blob
-      const url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
-      link.setAttribute("download", singleSubmission ? `abalat_${singleSubmission.id}.csv` : "abalat_submissions.csv");
-      link.style.visibility = "hidden";
-      
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      toast({
-        title: "ወርዷል",
-        description: "CSV ፋይል በተሳካ ሁኔታ ወርዷል",
-      });
+      const success = await exportToExcel(
+        formattedData,
+        columns,
+        singleSubmission ? `abalat_${singleSubmission.id}` : 'abalat_submissions'
+      );
+
+      if (success) {
+        toast({
+          title: "ወርዷል",
+          description: "Excel ፋይል በተሳካ ሁኔታ ወርዷል",
+        });
+      } else {
+        throw new Error('Export failed');
+      }
     } catch (error) {
       console.error("Export error:", error);
       toast({
         title: "Error",
-        description: "የCSV ፋይል ለማውረድ ችግር ተፈጥሯል",
+        description: "የExcel ፋይል ለማውረድ ችግር ተፈጥሯል",
         variant: "destructive",
       });
     }
@@ -332,12 +334,12 @@ const AbalatSubmissions = ({ showAddForm, setShowAddForm, filterType = "all", se
           )}
           
           <Button
-            onClick={() => exportToCsv()}
+            onClick={() => exportToXlsx()}
             className="bg-gov-accent hover:bg-gov-accent/90 gap-2 w-full md:w-auto"
             disabled={filteredSubmissions.length === 0}
           >
             <Download size={16} />
-            ሁሉንም ወርድ (CSV)
+            ሁሉንም ወርድ (Excel)
           </Button>
         </div>
       </div>
@@ -387,11 +389,11 @@ const AbalatSubmissions = ({ showAddForm, setShowAddForm, filterType = "all", se
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => exportToCsv(submission)}
+                        onClick={() => exportToXlsx(submission)}
                         className="gap-1"
                       >
                         <Download size={14} />
-                        CSV
+                        Excel
                       </Button>
                     </div>
                   </TableCell>
@@ -534,11 +536,11 @@ const AbalatSubmissions = ({ showAddForm, setShowAddForm, filterType = "all", se
                   </Button>
                   
                   <Button
-                    onClick={() => exportToCsv(selectedSubmission)}
+                    onClick={() => exportToXlsx(selectedSubmission)}
                     className="bg-gov-accent hover:bg-gov-accent/90 gap-2 font-medium"
                   >
                     <Download size={16} />
-                    CSV ወርድ
+                    Excel ወርድ
                   </Button>
                 </div>
               </div>
