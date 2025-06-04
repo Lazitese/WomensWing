@@ -72,6 +72,8 @@ const QretaForm = () => {
         // Upload to the 'qreta' bucket, in a 'qreta_submissions' folder
         const filePath = `qreta_submissions/${fileName}`;
 
+        console.log('Uploading file:', { fileName, filePath, fileType: file.type, fileSize: file.size });
+
         const { error: uploadError } = await supabase.storage
           .from('qreta') // Use the qreta bucket
           .upload(filePath, file);
@@ -88,8 +90,9 @@ const QretaForm = () => {
         
         if (publicUrlData) {
           fileUrl = publicUrlData.publicUrl;
+          console.log('File uploaded successfully:', { fileUrl });
         } else {
-           console.warn("Could not get public URL for uploaded qreta file");
+          console.warn("Could not get public URL for uploaded qreta file");
         }
       }
 

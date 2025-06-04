@@ -17,15 +17,19 @@ interface ReportSubmission {
   kebele: string;
   report_type: string;
   report_details: string;
+  file_url: string | null;
   created_at: string;
 }
 
-const ReportSubmissions = () => {
+interface ReportSubmissionsProps {
+  searchQuery: string;
+}
+
+const ReportSubmissions = ({ searchQuery }: ReportSubmissionsProps) => {
   const { toast } = useToast();
   const [submissions, setSubmissions] = useState<ReportSubmission[]>([]);
   const [filteredSubmissions, setFilteredSubmissions] = useState<ReportSubmission[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
   const [selectedSubmission, setSelectedSubmission] = useState<ReportSubmission | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
@@ -59,26 +63,42 @@ const ReportSubmissions = () => {
   }, [toast]);
 
   useEffect(() => {
-    if (searchTerm.trim() === "") {
+    if (!searchQuery.trim()) {
       setFilteredSubmissions(submissions);
       return;
     }
 
-    const lowercasedFilter = searchTerm.toLowerCase();
+    const searchLower = searchQuery.toLowerCase();
+    const searchIsNumber = /^\d+$/.test(searchQuery);
+    
     const filtered = submissions.filter(item => {
+      // If search query is a number, search in numeric fields and phone
+      if (searchIsNumber) {
+        const woredaNumber = item.woreda.replace(/\D/g, '');
+        const kebeleNumber = item.kebele.replace(/\D/g, '');
+        const phoneNumber = item.phone.replace(/\D/g, '');
+        
+        return (
+          phoneNumber.includes(searchQuery) ||
+          woredaNumber.includes(searchQuery) ||
+          kebeleNumber.includes(searchQuery)
+        );
+      }
+      
+      // Otherwise search in text fields
       return (
-        item.full_name.toLowerCase().includes(lowercasedFilter) ||
-        item.woreda.toLowerCase().includes(lowercasedFilter) ||
-        item.kebele.toLowerCase().includes(lowercasedFilter) ||
-        item.report_type.toLowerCase().includes(lowercasedFilter) ||
-        item.report_details.toLowerCase().includes(lowercasedFilter) ||
-        (item.email && item.email.toLowerCase().includes(lowercasedFilter)) ||
-        item.phone.includes(searchTerm)
+        item.full_name.toLowerCase().includes(searchLower) ||
+        item.phone.includes(searchQuery) ||
+        item.email?.toLowerCase().includes(searchLower) ||
+        item.woreda.toLowerCase().includes(searchLower) ||
+        item.kebele.toLowerCase().includes(searchLower) ||
+        item.report_type.toLowerCase().includes(searchLower) ||
+        item.report_details.toLowerCase().includes(searchLower)
       );
     });
 
     setFilteredSubmissions(filtered);
-  }, [searchTerm, submissions]);
+  }, [searchQuery, submissions]);
 
   const handleViewDetails = (submission: ReportSubmission) => {
     setSelectedSubmission(submission);
@@ -143,16 +163,6 @@ const ReportSubmissions = () => {
         <h2 className="text-2xl font-bold text-gov-dark">ሪፖርቶች</h2>
         
         <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
-          <div className="relative w-full md:w-64">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="ፈልግ..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-8"
-            />
-          </div>
-          
           <Button
             onClick={() => exportToCsv()}
             className="bg-gov-accent hover:bg-gov-accent/90 gap-2 w-full md:w-auto"
@@ -166,7 +176,7 @@ const ReportSubmissions = () => {
 
       {filteredSubmissions.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
-          {searchTerm.trim() !== "" ? (
+          {searchQuery.trim() !== "" ? (
             <p>ምንም ሪፖርት አልተገኘም። እባክዎን ሌላ ቃል ይሞክሩ።</p>
           ) : (
             <p>ምንም ሪፖርት አልተገኘም።</p>
@@ -257,23 +267,23 @@ const ReportSubmissions = () => {
                   <p className="text-sm font-medium text-gray-500">የሪፖርት ዓይነት</p>
                   <p>{selectedSubmission.report_type}</p>
                 </div>
-              </div>
-              
-              <div className="space-y-2 mt-4">
-                <p className="text-sm font-medium text-gray-500">የሪፖርት ዝርዝር (ፋይል)</p>
-                {selectedSubmission.report_details ? (
-                  <a 
-                    href={selectedSubmission.report_details}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    download
-                    className="text-gov-accent hover:underline"
-                  >
-                    ፋይል አውርድ
-                  </a>
-                ) : (
-                  <p>ምንም ፋይል የለም</p>
-                )}
+
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-gray-500">የሪፖርት ፋይል</p>
+                  {selectedSubmission.file_url ? (
+                    <a 
+                      href={selectedSubmission.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      download
+                      className="text-gov-accent hover:underline"
+                    >
+                      ፋይል አውርድ
+                    </a>
+                  ) : (
+                    <p>ምንም ፋይል የለም</p>
+                  )}
+                </div>
               </div>
               
               <div className="flex justify-end gap-4 mt-6">

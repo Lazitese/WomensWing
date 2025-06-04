@@ -88,9 +88,8 @@ const ReportSubmissionPage = () => {
           full_name: data.full_name,
           woreda: data.woreda,
           report_type: data.report_type,
-          report_details: publicUrl, // Store the file URL in report_details
-          // email and phone are nullable, can be added if needed
-          // Add kebele and phone to insertion data
+          report_details: "", // Keep empty or use for actual report details text
+          file_url: publicUrl, // Store the file URL in file_url field
           kebele: data.kebele,
           phone: data.phone,
         });

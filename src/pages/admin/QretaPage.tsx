@@ -6,13 +6,14 @@ import AdminSidebar from "@/components/admin/AdminSidebar";
 import { Session } from "@supabase/supabase-js";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Search, Download, Filter } from "lucide-react";
+import { Search, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 const QretaPage = () => {
   const navigate = useNavigate();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   
   useEffect(() => {
     document.title = "ጥቆማዎች | አስተዳዳሪ";
@@ -55,6 +56,10 @@ const QretaPage = () => {
     
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
   
   if (loading) {
     return (
@@ -91,6 +96,8 @@ const QretaPage = () => {
                       type="text" 
                       placeholder="ፈልግ..." 
                       className="pl-10 pr-4 py-2 w-[200px] rounded-lg border border-gray-200 focus:border-gov-accent"
+                      value={searchQuery}
+                      onChange={handleSearch}
                     />
                   </div>
                   <Button variant="outline" className="gap-2 border-gray-200">
@@ -113,19 +120,17 @@ const QretaPage = () => {
                         type="text" 
                         placeholder="ፈልግ..." 
                         className="pl-10 pr-4 py-2 w-full rounded-lg border border-gray-200 focus:border-gov-accent"
+                        value={searchQuery}
+                        onChange={handleSearch}
                       />
                     </div>
-                    <Button variant="outline" size="sm" className="gap-2 border-gray-200">
-                      <Filter size={14} />
-                      <span>አጣራ</span>
-                    </Button>
                   </div>
                 </div>
               </div>
               
               {/* Qreta Content */}
               <div className="p-0">
-                <QretaSubmissions />
+                <QretaSubmissions searchQuery={searchQuery} />
               </div>
             </div>
           </div>

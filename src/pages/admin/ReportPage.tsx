@@ -6,13 +6,14 @@ import AdminSidebar from "@/components/admin/AdminSidebar";
 import { Session } from "@supabase/supabase-js";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Search, Download, Filter } from "lucide-react";
+import { Search, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 const ReportPage = () => {
   const navigate = useNavigate();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   
   useEffect(() => {
     document.title = "ሪፖርቶች | አስተዳዳሪ";
@@ -55,6 +56,10 @@ const ReportPage = () => {
     
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
   
   if (loading) {
     return (
@@ -85,12 +90,14 @@ const ReportPage = () => {
                   <p className="text-gray-500 mt-1">ሁሉም ሪፖርቶች እዚህ ይገኛሉ።</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="relative hidden md:flex">
+                  <div className="relative flex">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                     <Input 
                       type="text" 
                       placeholder="ፈልግ..." 
                       className="pl-10 pr-4 py-2 w-[200px] rounded-lg border border-gray-200 focus:border-gov-accent"
+                      value={searchQuery}
+                      onChange={handleSearch}
                     />
                   </div>
                   <Button variant="outline" className="gap-2 border-gray-200">
@@ -106,26 +113,12 @@ const ReportPage = () => {
               <div className="p-6 border-b border-gray-100">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <h2 className="text-lg font-semibold text-gray-900">ሪፖርቶች</h2>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <div className="relative flex md:hidden w-full">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                      <Input 
-                        type="text" 
-                        placeholder="ፈልግ..." 
-                        className="pl-10 pr-4 py-2 w-full rounded-lg border border-gray-200 focus:border-gov-accent"
-                      />
-                    </div>
-                    <Button variant="outline" size="sm" className="gap-2 border-gray-200">
-                      <Filter size={14} />
-                      <span>አጣራ</span>
-                    </Button>
-                  </div>
                 </div>
               </div>
               
               {/* Report Content */}
               <div className="p-0">
-                <ReportSubmissions />
+                <ReportSubmissions searchQuery={searchQuery} />
               </div>
             </div>
           </div>

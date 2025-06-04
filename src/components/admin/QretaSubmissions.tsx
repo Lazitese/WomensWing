@@ -19,12 +19,15 @@ interface QretaSubmission {
   file_url: string | null;
 }
 
-const QretaSubmissions = () => {
+interface QretaSubmissionsProps {
+  searchQuery: string;
+}
+
+const QretaSubmissions = ({ searchQuery }: QretaSubmissionsProps) => {
   const { toast } = useToast();
   const [submissions, setSubmissions] = useState<QretaSubmission[]>([]);
   const [filteredSubmissions, setFilteredSubmissions] = useState<QretaSubmission[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
   const [selectedSubmission, setSelectedSubmission] = useState<QretaSubmission | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
@@ -56,6 +59,44 @@ const QretaSubmissions = () => {
 
     fetchSubmissions();
   }, [toast]);
+
+  // Filter submissions based on search query
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredSubmissions(submissions);
+      return;
+    }
+
+    const searchLower = searchQuery.toLowerCase();
+    const searchIsNumber = /^\d+$/.test(searchQuery);
+    
+    const filtered = submissions.filter((submission) => {
+      // If search query is a number, search in numeric fields and phone
+      if (searchIsNumber) {
+        const woredaNumber = submission.woreda.replace(/\D/g, '');
+        const kebeleNumber = submission.kebele.replace(/\D/g, '');
+        const phoneNumber = submission.phone.replace(/\D/g, '');
+        
+        return (
+          phoneNumber.includes(searchQuery) ||
+          woredaNumber.includes(searchQuery) ||
+          kebeleNumber.includes(searchQuery)
+        );
+      }
+      
+      // Otherwise search in text fields
+      return (
+        submission.full_name.toLowerCase().includes(searchLower) ||
+        submission.phone.includes(searchQuery) ||
+        submission.email?.toLowerCase().includes(searchLower) ||
+        submission.woreda.toLowerCase().includes(searchLower) ||
+        submission.kebele.toLowerCase().includes(searchLower) ||
+        submission.message.toLowerCase().includes(searchLower)
+      );
+    });
+
+    setFilteredSubmissions(filtered);
+  }, [searchQuery, submissions]);
 
   const handleViewDetails = (submission: QretaSubmission) => {
     setSelectedSubmission(submission);
@@ -118,7 +159,7 @@ const QretaSubmissions = () => {
     <div>
       {filteredSubmissions.length === 0 ? (
         <div className="text-center py-16 text-gray-400 bg-white rounded-xl shadow-inner border border-gray-100">
-          {searchTerm.trim() !== "" ? (
+          {searchQuery.trim() !== "" ? (
             <p>ምንም ጥቆማ አልተገኘም። እባክዎን ሌላ ቃል ይሞክሩ።</p>
           ) : (
             <p>ምንም ጥቆማ አልተገኘም።</p>
@@ -230,15 +271,21 @@ const QretaSubmissions = () => {
               {selectedSubmission.file_url && (
                 <div className="space-y-1">
                    <h4 className="text-sm font-medium text-gray-500">አባሪ ፋይል</h4>
-                    <a
-                      href={selectedSubmission.file_url}
-                      target="_blank" // Open in new tab
-                      rel="noopener noreferrer" // Security best practice
-                      download // Suggest download instead of navigating
-                      className="text-gov-accent hover:underline font-medium"
-                    >
-                      ፋይል አውርድ
-                    </a>
+                   <div className="flex flex-col gap-2">
+                     <a
+                       href={selectedSubmission.file_url}
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       className="text-gov-accent hover:underline font-medium inline-flex items-center gap-2"
+                     >
+                       <Download size={16} />
+                       ፋይል አውርድ
+                     </a>
+                     {/* Debug info - remove in production */}
+                     <div className="text-xs text-gray-400 break-all">
+                       URL: {selectedSubmission.file_url}
+                     </div>
+                   </div>
                 </div>
               )}
 

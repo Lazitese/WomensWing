@@ -20,6 +20,7 @@ import ReportPage from "./pages/admin/ReportPage";
 import SettingsPage from "./pages/admin/SettingsPage";
 import AllAchievements from "./pages/AllAchievements";
 import DocumentsPage from "./pages/DocumentsPage";
+import UploadMembers from "./pages/UploadMembers";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/documents" element={<DocumentsPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/achievements" element={<AllAchievements />} />
+          <Route path="/upload-members" element={<UploadMembers />} />
           
           {/* Admin Routes */}
           <Route path="/admin/login" element={<Login />} />
