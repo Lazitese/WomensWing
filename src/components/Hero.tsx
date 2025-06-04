@@ -1,4 +1,3 @@
-
 import { useEffect, useRef } from "react";
 import { ArrowRight, HeartHandshake } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -72,7 +71,7 @@ const Hero = () => {
       {/* Hero background image */}
       <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" 
            style={{ 
-             backgroundImage: 'url(/lovable-uploads/113a8e96-472f-42b6-a819-45ac4521b7c9.png)',
+             backgroundImage: 'url(/images/hero-bg.png)',
              backgroundPosition: 'center',
              backgroundSize: 'cover'
            }}>

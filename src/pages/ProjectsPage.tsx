@@ -356,131 +356,125 @@ const ProjectsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-brand-white">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
       <Navbar />
 
-      <div className="relative py-20 md:py-28 overflow-hidden">
-        {/* Background Image with Overlay */}
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="/lovable-uploads/113a8e96-472f-42b6-a819-45ac4521b7c9.png" 
-            alt="Colorful Background" 
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-brand-black/40"></div>
-        </div>
+      {/* Hero Background */}
+      <div 
+        className="absolute inset-0 z-0"
+        style={{
+          backgroundImage: 'url(/images/hero-bg.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          maskImage: 'linear-gradient(to bottom, black, transparent)'
+        }}
+      />
 
-        {/* Content with good contrast */}
-        <div className="container mx-auto px-4 relative z-10">
+      <div className="relative z-10 pt-24 pb-16">
+        <div className="container-gov">
+          {/* Leadership Stats Section */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-3xl mx-auto text-center mb-16"
+          >
+            <motion.h1 
+              className="text-4xl md:text-5xl font-bold text-gov-dark mb-6"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <span className="text-gov-accent">ተግባራት</span>
+            </motion.h1>
+            <motion.p 
+              className="text-gray-600 text-xl"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              የአመራር ስምሪት ውስጥ የሴቶች ድርሻ
+            </motion.p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-16">
+            {leadershipStats.map((stat, index) => (
+              <StatCard key={index} {...stat} />
+            ))}
+          </div>
+
+          {/* Rest of the content */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.8 }}
-            className="text-center"
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-center max-w-4xl mx-auto mb-8"
           >
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-brand-white drop-shadow-lg">
-              ተግባራት <span className="text-brand-yellow"></span>
-            </h1>
-            <p className="text-lg md:text-xl max-w-2xl mx-auto text-brand-white drop-shadow-md">
-            </p>
+            <h2 className="text-2xl md:text-3xl font-semibold mb-4 text-brand-black">በ2017 በብልጽና ሴቶች ክንፍ የተሰሩ ስራዎች
+            </h2>
+            <div className="w-20 h-1 bg-gradient-to-r from-brand-blue via-brand-red to-brand-yellow mx-auto mb-6"></div>
+            
           </motion.div>
+          <section>
+            <SectionHeader title="ፖለቲካዊ ተጠቃሚነት" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+              {politicalProjects.map((project, idx) => (
+                <ProjectCard 
+                  key={`political-${idx}`}
+                  title={project.title} 
+                  index={idx} 
+                  category="political" 
+                  images={project.images}
+                />
+              ))}
+            </div>
+          </section>
+          
+          <section>
+            <SectionHeader title="ማህበራዊ ተጠቃሚነት" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+              {socialProjects.map((project, idx) => (
+                <SocialStatCard
+                  key={`social-${idx}`}
+                  title={project.title}
+                  value={project.value}
+                  label={project.label}
+                  index={idx}
+                />
+              ))}
+            </div>
+          </section>
+          
+          <section>
+            <SectionHeader title="ኢኮኖሚያዊ ተሳትፎ" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {economicProjects.map((project, idx) => (
+                project.hasImage ? ( // Render ProjectCard if hasImage is true
+                  <ProjectCard
+                    key={`economic-${idx}`}
+                    title={project.title}
+                    index={idx}
+                    category="economic"
+                    value={project.value}
+                    label={project.label}
+                    images={project.images} // Pass images array
+                  />
+                ) : (
+                  <EconomicStatCard
+                    key={`economic-${idx}`}
+                    title={project.title}
+                    value={project.value}
+                    label={project.label}
+                    index={idx}
+                    hasImage={false}
+                  />
+                )
+              ))}
+            </div>
+          </section>
 
-          {/* Decorative elements */}
-          <div className="hidden md:block">
-            <div className="absolute top-10 left-10 w-20 h-20 rounded-full bg-brand-blue/20 blur-2xl"></div>
-            <div className="absolute bottom-10 right-10 w-32 h-32 rounded-full bg-brand-yellow/20 blur-2xl"></div>
-          </div>
         </div>
       </div>
-
-      <main className="container mx-auto px-4 py-16 space-y-24">
-        {/* Brief intro section */}
-     
-        <section>
-          <SectionHeader title="የአመራር ስምሪት ውስጥ የሴቶች ድርሻ" /> {/* New section header for stats */}
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
-            {leadershipStats.map((stat, idx) => (
-              <StatCard 
-                key={idx} 
-                title={stat.title} 
-                value={stat.value} 
-                icon={stat.icon} 
-                color={idx === 0 ? "bg-gradient-to-br from-brand-blue/20 to-brand-blue/5" : "bg-gradient-to-br from-brand-red/20 to-brand-red/5"}
-              />
-            ))}
-          </div>
-        </section>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-center max-w-4xl mx-auto mb-8"
-        >
-          <h2 className="text-2xl md:text-3xl font-semibold mb-4 text-brand-black">በ2017 በብልጽና ሴቶች ክንፍ የተሰሩ ስራዎች
-          </h2>
-          <div className="w-20 h-1 bg-gradient-to-r from-brand-blue via-brand-red to-brand-yellow mx-auto mb-6"></div>
-          
-        </motion.div>
-        <section>
-          <SectionHeader title="ፖለቲካዊ ተጠቃሚነት" />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-            {politicalProjects.map((project, idx) => (
-              <ProjectCard 
-                key={`political-${idx}`}
-                title={project.title} 
-                index={idx} 
-                category="political" 
-                images={project.images}
-              />
-            ))}
-          </div>
-        </section>
-        
-        <section>
-          <SectionHeader title="ማህበራዊ ተጠቃሚነት" />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-            {socialProjects.map((project, idx) => (
-              <SocialStatCard
-                key={`social-${idx}`}
-                title={project.title}
-                value={project.value}
-                label={project.label}
-                index={idx}
-              />
-            ))}
-          </div>
-        </section>
-        
-        <section>
-          <SectionHeader title="ኢኮኖሚያዊ ተሳትፎ" />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {economicProjects.map((project, idx) => (
-              project.hasImage ? ( // Render ProjectCard if hasImage is true
-                <ProjectCard
-                  key={`economic-${idx}`}
-                  title={project.title}
-                  index={idx}
-                  category="economic"
-                  value={project.value}
-                  label={project.label}
- images={project.images} // Pass images array
-                />
-              ) : (
-                <EconomicStatCard
-                  key={`economic-${idx}`}
-                  title={project.title}
-                  value={project.value}
-                  label={project.label}
-                  index={idx}
-                  hasImage={false}
-                />
-              )
-            ))}
-          </div>
-        </section>
-
-      </main>
 
       <Footer />
 
