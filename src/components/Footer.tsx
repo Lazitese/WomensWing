@@ -25,18 +25,10 @@ const Footer = () => {
               የአቃቂ ቃሊቲ ክፍለ ከተማ ብልጽግና ፓርቲ ሴቶች ክንፍ ቅርንጫፍ ጽ/ቤት ኃላፊነትን ባለው መንገድ ህብረተሰቡን እያገለገለ ይገኛል።
             </p>
             <div className="flex space-x-3">
-              <a href="#" className="w-8 h-8 bg-white/10 hover:bg-gov-gold hover:text-gov-dark rounded-full flex items-center justify-center transition-colors duration-200">
+              <a href="https://www.facebook.com/share/p/1AwXpcRzvr/?mibextid=oFDknk" className="w-8 h-8 bg-white/10 hover:bg-gov-gold hover:text-gov-dark rounded-full flex items-center justify-center transition-colors duration-200">
                 <Facebook size={16} />
               </a>
-              <a href="#" className="w-8 h-8 bg-white/10 hover:bg-gov-gold hover:text-gov-dark rounded-full flex items-center justify-center transition-colors duration-200">
-                <Twitter size={16} />
-              </a>
-              <a href="#" className="w-8 h-8 bg-white/10 hover:bg-gov-gold hover:text-gov-dark rounded-full flex items-center justify-center transition-colors duration-200">
-                <Instagram size={16} />
-              </a>
-              <a href="#" className="w-8 h-8 bg-white/10 hover:bg-gov-gold hover:text-gov-dark rounded-full flex items-center justify-center transition-colors duration-200">
-                <Linkedin size={16} />
-              </a>
+             
             </div>
           </div>
           
