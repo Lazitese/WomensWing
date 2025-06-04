@@ -132,10 +132,10 @@ const QretaSubmissions = ({ searchQuery }: QretaSubmissionsProps) => {
       );
 
       if (success) {
-        toast({
-          title: "ወርዷል",
+      toast({
+        title: "ወርዷል",
           description: "Excel ፋይል በተሳካ ሁኔታ ወርዷል",
-        });
+      });
       } else {
         throw new Error('Export failed');
       }

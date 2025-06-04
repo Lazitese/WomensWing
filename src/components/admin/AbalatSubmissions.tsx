@@ -229,10 +229,10 @@ const AbalatSubmissions = ({ showAddForm, setShowAddForm, filterType = "all", se
       );
 
       if (success) {
-        toast({
-          title: "ወርዷል",
+      toast({
+        title: "ወርዷል",
           description: "Excel ፋይል በተሳካ ሁኔታ ወርዷል",
-        });
+      });
       } else {
         throw new Error('Export failed');
       }

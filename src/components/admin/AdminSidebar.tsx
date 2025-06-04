@@ -11,7 +11,9 @@ import {
   FileText,
   Menu,
   X,
-  Settings
+  Settings,
+  UserPlus,
+  ClipboardList
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -113,6 +115,12 @@ const AdminSidebar = () => {
       label: "አባላት",
       onClick: () => navigate('/admin/abalat'),
       active: isActive('/admin/abalat')
+    },
+    {
+      icon: <UserPlus size={collapsed ? 22 : 20} />,
+      label: "የአባልነት ጥያቄዎች",
+      onClick: () => navigate('/admin/membership-requests'),
+      active: isActive('/admin/membership-requests')
     },
     {
       icon: <FileText size={collapsed ? 22 : 20} />,
